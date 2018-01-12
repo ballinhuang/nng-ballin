@@ -8,45 +8,42 @@ using namespace std;
 BoardSolver::BoardSolver(int *data)
 {
     clue = data;
-    board = new Board();
 }
 
 BoardSolver::~BoardSolver()
 {
-    delete board;
 }
 
 void BoardSolver::do_solve()
 {
-    BACKTRACKING(board);
+    BACKTRACKING(&board);
 }
 
 void BoardSolver::BACKTRACKING(Board *G)
 {
+
     FP1(G);
+
     if (G->getStatus() == SOLVED || G->getStatus() == CONFLICT)
         return;
     int p = G->getUnPaintedP();
 
-    Board *GZERO = new Board();
-    copyBoard(G, GZERO);
-    GZERO->setP(p, 0);
-    BACKTRACKING(GZERO);
+    Board GZERO;
+    copyBoard(G, &GZERO);
+    GZERO.setP(p, 0);
+    BACKTRACKING(&GZERO);
 
-    if (GZERO->getStatus() == SOLVED)
+    if (GZERO.getStatus() == SOLVED)
     {
-        copyBoard(GZERO, G);
-        delete GZERO;
+        copyBoard(&GZERO, G);
         return;
     }
-    delete GZERO;
 
-    Board *GONE = new Board();
-    copyBoard(G, GONE);
-    GONE->setP(p, 1);
-    BACKTRACKING(GONE);
-    copyBoard(GONE, G);
-    delete GONE;
+    Board GONE;
+    copyBoard(G, &GONE);
+    GONE.setP(p, 1);
+    BACKTRACKING(&GONE);
+    copyBoard(&GONE, G);
 
     return;
 }
@@ -84,23 +81,23 @@ void BoardSolver::FP1(Board *G)
 
 Board *BoardSolver::getAnser()
 {
-    return board;
+    return &board;
 }
 
 void BoardSolver::PROPAGATE(Board *G)
 {
     int unslovedindex;
-    int *row = new int[BOARDSIZE];
-    int *rowclue = new int[CLUESIZE];
-    LineSolver *linesolver = new LineSolver();
+    int row[BOARDSIZE];
+    int rowclue[CLUESIZE];
+    LineSolver linesolver;
     while (G->hasUnslovedIndex())
     {
         unslovedindex = G->getUnslovedIndex();
         G->copytorow(unslovedindex, row);
         copyClue(unslovedindex, rowclue);
 
-        linesolver->setlinesolver(row, rowclue);
-        bool result = linesolver->solve();
+        linesolver.setlinesolver(row, rowclue);
+        bool result = linesolver.solve();
 
         if (result)
         {
@@ -112,44 +109,41 @@ void BoardSolver::PROPAGATE(Board *G)
         }
     }
     G->updateStatus();
-    delete[] row;
-    delete[] rowclue;
-    delete linesolver;
 }
 
 void BoardSolver::PROBE(Board *G, int p)
 {
-    Board *GZERO = new Board();
-    Board *GONE = new Board();
+    Board GZERO;
+    Board GONE;
 
-    copyBoard(G, GZERO);
-    copyBoard(G, GONE);
+    copyBoard(G, &GZERO);
+    copyBoard(G, &GONE);
 
-    GZERO->setP(p, 0);
-    GONE->setP(p, 1);
+    GZERO.setP(p, 0);
+    GONE.setP(p, 1);
 
-    PROPAGATE(GZERO);
-    PROPAGATE(GONE);
+    PROPAGATE(&GZERO);
+    PROPAGATE(&GONE);
 
-    if (GZERO->getStatus() == CONFLICT && GONE->getStatus() == CONFLICT)
+    if (GZERO.getStatus() == CONFLICT && GONE.getStatus() == CONFLICT)
     {
         G->status = CONFLICT;
     }
-    else if (GZERO->getStatus() == CONFLICT)
+    else if (GZERO.getStatus() == CONFLICT)
     {
-        G->mergeBoard(GONE, NULL);
+        G->mergeBoard(&GONE, NULL);
     }
-    else if (GONE->getStatus() == CONFLICT)
+    else if (GONE.getStatus() == CONFLICT)
     {
-        G->mergeBoard(GZERO, NULL);
+        G->mergeBoard(&GZERO, NULL);
     }
-    else if (GZERO->getStatus() == SOLVED && GONE->getStatus() == SOLVED)
+    else if (GZERO.getStatus() == SOLVED && GONE.getStatus() == SOLVED)
     {
-        G->mergeBoard(GZERO, NULL);
+        G->mergeBoard(&GZERO, NULL);
     }
     else
     {
-        G->mergeBoard(GZERO, GONE);
+        G->mergeBoard(&GZERO, &GONE);
     }
 
     G->updateStatus();
@@ -161,9 +155,6 @@ void BoardSolver::PROBE(Board *G, int p)
         else
             G->status = INCOMPLETE;
     }
-
-    delete GZERO;
-    delete GONE;
 }
 
 void BoardSolver::copyClue(int index, int *rowclue)
@@ -174,17 +165,17 @@ void BoardSolver::copyClue(int index, int *rowclue)
 
 void BoardSolver::copyBoard(Board *G, Board *copy)
 {
-    *copy = *G;
+    copy->copy(G);
 }
 
 bool BoardSolver::checkAns()
 {
-    int *row = new int[BOARDSIZE];
-    int *rowclue = new int[CLUESIZE];
-    for (int index = 1; index <= 50; index++)
+    int row[BOARDSIZE];
+    int rowclue[CLUESIZE];
+    for (int index = 1; index <= BOARDSIZE * 2; index++)
     {
 
-        this->board->copytorow(index, row);
+        this->board.copytorow(index, row);
         copyClue(index, rowclue);
         int i = BOARDSIZE - 1;
         int j = rowclue[CLUESIZE - 1];
@@ -192,8 +183,6 @@ bool BoardSolver::checkAns()
         {
             if (row[i] == Unknown)
             {
-                delete[] row;
-                delete[] rowclue;
                 return false;
             }
 
@@ -211,8 +200,6 @@ bool BoardSolver::checkAns()
                     }
                     else
                     {
-                        delete[] row;
-                        delete[] rowclue;
                         return false;
                     }
                 }
@@ -222,12 +209,8 @@ bool BoardSolver::checkAns()
         }
         if (j != 0)
         {
-            delete[] row;
-            delete[] rowclue;
             return false;
         }
     }
-    delete[] row;
-    delete[] rowclue;
     return true;
 }

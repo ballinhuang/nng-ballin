@@ -16,7 +16,7 @@ public:
 
 private:
   int *clue;
-  Board *board;
+  Board board;
 
   void PROPAGATE(Board *);
   void PROBE(Board *, int);

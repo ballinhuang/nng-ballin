@@ -22,18 +22,18 @@ Board::Board()
 
 Board::~Board()
 {
-    delete[] this->board;
+    delete[] board;
 }
 
-void Board::operator=(const Board b)
+void Board::copy(const Board *b)
 {
     for (int i = 0; i < BOARDSIZE * BOARDSIZE; i++)
     {
-        board[i] = b.board[i];
+        board[i] = b->board[i];
     }
-    this->list = b.list;
-    this->rowhash = b.rowhash;
-    this->status = b.status;
+    this->list = b->list;
+    this->rowhash = b->rowhash;
+    this->status = b->status;
 }
 
 void Board::paintrow(int index, int *row)

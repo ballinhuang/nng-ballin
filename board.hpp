@@ -25,7 +25,7 @@ class Board
 public:
   Board();
   ~Board();
-  void operator=(const Board);
+  void copy(const Board *);
   void paintrow(int, int *);
   void copytorow(int, int *);
   int getUnslovedIndex();
