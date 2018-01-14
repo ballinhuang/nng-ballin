@@ -47,7 +47,6 @@ void Board::paintrow(int index, int *row)
             {
                 this->board[(index - 1) * BOARDSIZE + i] = row[i];
                 int colindex = i + 1 + BOARDSIZE; // ex:1 -> 26
-                //checkRowSloved(colindex);
                 setRowhash(colindex, RowInQueue);
             }
         }
@@ -61,12 +60,10 @@ void Board::paintrow(int index, int *row)
             {
                 this->board[(index - 1) + BOARDSIZE * i] = row[i];
                 int rowindex = i + 1; // ex: i=0 -> row 1
-                //checkRowSloved(rowindex);
                 setRowhash(rowindex, RowInQueue);
             }
         }
     }
-    checkRowSloved(tempindex);
 }
 
 void Board::copytorow(int index, int *row)
@@ -90,17 +87,6 @@ void Board::copytorow(int index, int *row)
 
 bool Board::hasUnslovedIndex()
 {
-    /*int top;
-    while (!this->list.empty())
-    {
-        top = this->list.front();
-        if (rowhash[top] != RowInQueue)
-            this->list.pop();
-        else
-        {
-            return true;
-        }
-    }*/
     if (!this->list.empty())
         return true;
     return false;
@@ -118,6 +104,7 @@ int Board::getUnslovedIndex()
     return result;
 }
 
+//useless
 void Board::checkRowSloved(int index)
 {
     bool sloved = true;

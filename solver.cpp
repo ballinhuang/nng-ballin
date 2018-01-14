@@ -38,11 +38,8 @@ void BoardSolver::BACKTRACKING(Board *G)
         return;
     }
 
-    Board GONE;
-    copyBoard(G, &GONE);
-    GONE.setP(p, 1);
-    BACKTRACKING(&GONE);
-    copyBoard(&GONE, G);
+    G->setP(p, 1);
+    BACKTRACKING(G);
     return;
 }
 
