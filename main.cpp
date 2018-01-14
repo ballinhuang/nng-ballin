@@ -1,6 +1,5 @@
 #include <iostream>
 #include <ctime>
-#include <vector>
 
 #include "options.hpp"
 Options *Options::options = 0;
@@ -29,7 +28,6 @@ int main(int argc, char *argv[])
 
     int Case = readFile(Options::GetInstance()->inputFileName, datas);
 
-    vector<Board *> allanser;
     BoardSolver *solver;
 
     time_t start_time = time(NULL);
@@ -37,22 +35,25 @@ int main(int argc, char *argv[])
     int anser = 0;
     for (int index = 1; index < Case; index++)
     {
-        int *data;
-        data = new int[BOARDSIZE * 2 * CLUESIZE];
+        int data[BOARDSIZE * 2 * CLUESIZE];
         copyData(datas, index, data);
         solver = new BoardSolver(data);
         solver->do_solve();
         if (solver->checkAns())
         {
             cout << "$" << index << "\t"
-                 << "time:" << time(NULL) - last_time << "\t"
-                 << "Current" << endl;
+                 << "time:" << time(NULL) - last_time << "\t\t"
+                 << "Correct"
+                 << "\t\t"
+                 << "Total time:" << time(NULL) - start_time << endl;
         }
         else
         {
             cout << "$" << index << "\t"
-                 << "time:" << time(NULL) - last_time << "\t"
-                 << "Wrong" << endl;
+                 << "time:" << time(NULL) - last_time << "\t\t"
+                 << "Wrong"
+                 << "\t\t"
+                 << "Total time:" << time(NULL) - start_time << endl;
         }
         solver->getAnser()->printBoard(index);
         if (solver->getAnser()->status == 1)
@@ -61,7 +62,6 @@ int main(int argc, char *argv[])
         last_time = time(NULL);
 
         delete solver;
-        delete[] data;
     }
 
     time_t end_time = time(NULL);

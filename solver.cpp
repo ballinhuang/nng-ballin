@@ -21,7 +21,6 @@ void BoardSolver::do_solve()
 
 void BoardSolver::BACKTRACKING(Board *G)
 {
-
     FP1(G);
 
     if (G->getStatus() == SOLVED || G->getStatus() == CONFLICT)
@@ -44,7 +43,6 @@ void BoardSolver::BACKTRACKING(Board *G)
     GONE.setP(p, 1);
     BACKTRACKING(&GONE);
     copyBoard(&GONE, G);
-
     return;
 }
 
@@ -52,7 +50,6 @@ void BoardSolver::FP1(Board *G)
 {
     while (G->hasUnslovedIndex())
     {
-        G->status = INCOMPLETE;
         PROPAGATE(G);
         if (G->getStatus() == SOLVED || G->getStatus() == CONFLICT)
             return;
@@ -66,9 +63,10 @@ void BoardSolver::FP1(Board *G)
             {
                 return; //need backtrack
             }
-            if (firstp == -1)
+            if (firstp == -1 || G->getStatus() == HASSOLVED)
             {
                 firstp = p;
+                G->status = INCOMPLETE;
             }
             PROBE(G, p);
             if (G->getStatus() == SOLVED || G->getStatus() == CONFLICT)
@@ -132,24 +130,16 @@ void BoardSolver::PROBE(Board *G, int p)
     else if (GZERO.getStatus() == CONFLICT)
     {
         G->mergeBoard(&GONE, NULL);
+        G->status = HASSOLVED;
     }
     else if (GONE.getStatus() == CONFLICT)
     {
         G->mergeBoard(&GZERO, NULL);
-    }
-    else if (GZERO.getStatus() == SOLVED && GONE.getStatus() == SOLVED)
-    {
-        G->mergeBoard(&GZERO, NULL);
+        G->status = HASSOLVED;
     }
     else
     {
         G->mergeBoard(&GZERO, &GONE);
-    }
-
-    G->updateStatus();
-
-    if (G->getStatus() != SOLVED && G->getStatus() != CONFLICT)
-    {
         if (G->hasUnslovedIndex())
             G->status = PAINTED;
         else
@@ -199,6 +189,13 @@ bool BoardSolver::checkAns()
                         continue;
                     }
                     else
+                    {
+                        return false;
+                    }
+                }
+                if (i > 0)
+                {
+                    if (row[i] != UnPainted)
                     {
                         return false;
                     }

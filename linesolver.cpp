@@ -51,23 +51,19 @@ bool LineSolver::Paintp(int i, int j, int *row)
     bool f0 = Fix0(i, j, row);
     bool f1 = Fix1(i, j, row);
 
-    int p0row[BOARDSIZE], p1row[BOARDSIZE];
-
-    this->copyrow(p0row, row);
-    this->copyrow(p1row, row);
-
     if (f0 && !f1)
     {
-        Paint0(i, j, p0row);
-        this->copyrow(row, p0row);
+        Paint0(i, j, row);
     }
     else if (!f0 && f1)
     {
-        Paint1(i, j, p1row);
-        this->copyrow(row, p1row);
+        Paint1(i, j, row);
     }
     else if (f0 && f1)
     {
+        int p0row[BOARDSIZE], p1row[BOARDSIZE];
+        this->copyrow(p0row, row);
+        this->copyrow(p1row, row);
         Paint0(i, j, p0row);
         Paint1(i, j, p1row);
         this->mergerow(row, p0row, p1row);
@@ -173,7 +169,6 @@ bool LineSolver::Fix(int i, int j, int *row)
             fix0Result = Fix0(i, j, row);
             this->m_fix0Cache->setFixResult(i, j, fix0Result);
         }
-
         return fix1Result || fix0Result;
     }
 }

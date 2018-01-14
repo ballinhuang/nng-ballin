@@ -226,10 +226,7 @@ void Board::mergeBoard(Board *a, Board *b)
     {
         for (int i = 0; i < BOARDSIZE * BOARDSIZE; i++)
         {
-            if (this->board[i] != a->getP(i))
-            {
-                setP(i, a->getP(i));
-            }
+            this->board[i] = a->board[i];
         }
     }
     else
