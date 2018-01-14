@@ -47,7 +47,7 @@ void Board::paintrow(int index, int *row)
             {
                 this->board[(index - 1) * BOARDSIZE + i] = row[i];
                 int colindex = i + 1 + BOARDSIZE; // ex:1 -> 26
-                checkRowSloved(colindex);
+                //checkRowSloved(colindex);
                 setRowhash(colindex, RowInQueue);
             }
         }
@@ -61,7 +61,7 @@ void Board::paintrow(int index, int *row)
             {
                 this->board[(index - 1) + BOARDSIZE * i] = row[i];
                 int rowindex = i + 1; // ex: i=0 -> row 1
-                checkRowSloved(rowindex);
+                //checkRowSloved(rowindex);
                 setRowhash(rowindex, RowInQueue);
             }
         }
@@ -90,7 +90,7 @@ void Board::copytorow(int index, int *row)
 
 bool Board::hasUnslovedIndex()
 {
-    int top;
+    /*int top;
     while (!this->list.empty())
     {
         top = this->list.front();
@@ -100,7 +100,9 @@ bool Board::hasUnslovedIndex()
         {
             return true;
         }
-    }
+    }*/
+    if (!this->list.empty())
+        return true;
     return false;
 }
 
@@ -228,19 +230,27 @@ void Board::mergeBoard(Board *a, Board *b)
         {
             this->board[i] = a->board[i];
         }
+        if (a->status == SOLVED)
+            this->status = SOLVED;
+        else
+            this->status = PAINTED;
     }
     else
     {
+        bool ispainted = false;
         for (int i = 0; i < BOARDSIZE * BOARDSIZE; i++)
         {
             if (a->getP(i) == b->getP(i))
             {
                 if (this->board[i] != a->getP(i))
                 {
-                    setP(i, a->getP(i));
+                    ispainted = true;
+                    this->board[i] = a->board[i];
                 }
             }
         }
+        if (ispainted)
+            this->status = PAINTED;
     }
 }
 

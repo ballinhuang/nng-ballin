@@ -63,16 +63,15 @@ void BoardSolver::FP1(Board *G)
             {
                 return; //need backtrack
             }
-            if (firstp == -1 || G->getStatus() == HASSOLVED)
+            if (firstp == -1 || G->getStatus() == PAINTED)
             {
                 firstp = p;
                 G->status = INCOMPLETE;
             }
             PROBE(G, p);
+
             if (G->getStatus() == SOLVED || G->getStatus() == CONFLICT)
                 return;
-            if (G->getStatus() == PAINTED)
-                break;
         }
     }
 }
@@ -104,6 +103,7 @@ void BoardSolver::PROPAGATE(Board *G)
         else
         {
             G->status = CONFLICT;
+            return;
         }
     }
     G->updateStatus();
@@ -130,20 +130,14 @@ void BoardSolver::PROBE(Board *G, int p)
     else if (GZERO.getStatus() == CONFLICT)
     {
         G->mergeBoard(&GONE, NULL);
-        G->status = HASSOLVED;
     }
     else if (GONE.getStatus() == CONFLICT)
     {
         G->mergeBoard(&GZERO, NULL);
-        G->status = HASSOLVED;
     }
     else
     {
         G->mergeBoard(&GZERO, &GONE);
-        if (G->hasUnslovedIndex())
-            G->status = PAINTED;
-        else
-            G->status = INCOMPLETE;
     }
 }
 
@@ -190,6 +184,10 @@ bool BoardSolver::checkAns()
                     }
                     else
                     {
+                        if (DEBUGMODE)
+                        {
+                            cout << "Wrong at index " << index << endl;
+                        }
                         return false;
                     }
                 }
@@ -197,6 +195,10 @@ bool BoardSolver::checkAns()
                 {
                     if (row[i] != UnPainted)
                     {
+                        if (DEBUGMODE)
+                        {
+                            cout << "Wrong at index " << index << endl;
+                        }
                         return false;
                     }
                 }

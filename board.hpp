@@ -14,7 +14,6 @@
 #define PAINTED 0
 #define SOLVED 1
 #define INCOMPLETE 2
-#define HASSOLVED 3
 
 //Row status
 #define RowSloved 1
