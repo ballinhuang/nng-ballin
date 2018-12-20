@@ -44,6 +44,8 @@ public:
 
   void printBoard(int);
 
+  void clearlist();
+
 private:
   int *board;
   std::queue<int> list;

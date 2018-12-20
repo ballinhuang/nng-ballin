@@ -86,21 +86,52 @@ void BoardSolver::PROPAGATE(Board *G)
     LineSolver linesolver;
     while (G->hasUnslovedIndex())
     {
-        unslovedindex = G->getUnslovedIndex();
-        G->copytorow(unslovedindex, row);
-        copyClue(unslovedindex, rowclue);
+        G->clearlist();
 
-        linesolver.setlinesolver(row, rowclue);
-        bool result = linesolver.solve();
-
-        if (result)
+        for (unslovedindex = 1; unslovedindex <= 25; unslovedindex++)
         {
-            G->paintrow(unslovedindex, row);
+            if (G->getRowhash(unslovedindex) == RowInQueue)
+            {
+                G->setRowhash(unslovedindex, RowUnSloved);
+                G->copytorow(unslovedindex, row);
+                copyClue(unslovedindex, rowclue);
+
+                linesolver.setlinesolver(row, rowclue);
+                bool result = linesolver.solve();
+
+                if (result)
+                {
+                    G->paintrow(unslovedindex, row);
+                }
+                else
+                {
+                    G->status = CONFLICT;
+                    return;
+                }
+            }
         }
-        else
+
+        for (unslovedindex = 26; unslovedindex <= 50; unslovedindex++)
         {
-            G->status = CONFLICT;
-            return;
+            if (G->getRowhash(unslovedindex) == RowInQueue)
+            {
+                G->setRowhash(unslovedindex, RowUnSloved);
+                G->copytorow(unslovedindex, row);
+                copyClue(unslovedindex, rowclue);
+
+                linesolver.setlinesolver(row, rowclue);
+                bool result = linesolver.solve();
+
+                if (result)
+                {
+                    G->paintrow(unslovedindex, row);
+                }
+                else
+                {
+                    G->status = CONFLICT;
+                    return;
+                }
+            }
         }
     }
     G->updateStatus();

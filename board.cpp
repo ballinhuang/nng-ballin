@@ -104,6 +104,12 @@ int Board::getUnslovedIndex()
     return result;
 }
 
+void Board::clearlist()
+{
+    std::queue<int> empty;
+    std::swap(this->list, empty);
+}
+
 //useless
 void Board::checkRowSloved(int index)
 {
