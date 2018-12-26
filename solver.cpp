@@ -84,14 +84,13 @@ __global__ void kernel(Board *G, int *clue)
     int index_row = blockIdx.x * blockDim.x + threadIdx.x + 1;
     int index_col = blockIdx.x * blockDim.x + threadIdx.x + 26;
 
-    int row[625];
+    int row[25];
     int rowclue[14];
     LineSolver linesolver;
     bool result;
 
     while (G->hasUnslovedIndex() && G->status != CONFLICT)
     {
-        __syncthreads();
         G->clearlist();
         __syncthreads();
 
@@ -128,15 +127,19 @@ __global__ void kernel(Board *G, int *clue)
         {
             G->status = CONFLICT;
         }
+        __syncthreads();
     }
 }
 
 void BoardSolver::PROPAGATE(Board *G)
 {
-    cudaMalloc(&G, sizeof(Board));
-    kernel<<<1, 25>>>(G, clue);
-    cudaMemcpy(&G, G, sizeof(Board), cudaMemcpyDeviceToHost);
-    cudaFree(G);
+    Board *G_gpu;
+    cudaMalloc(&G_gpu, sizeof(Board));
+    cudaMemcpy(G_gpu, G, sizeof(Board), cudaMemcpyHostToDevice);
+    kernel<<<1, 25>>>(G_gpu, clue);
+    cudaMemcpy(G, G_gpu, sizeof(Board), cudaMemcpyDeviceToHost);
+    cudaFree(G_gpu);
+    G->printBoard(1);
     G->updateStatus();
 }
 
