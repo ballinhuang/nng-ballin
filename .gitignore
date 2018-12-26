@@ -32,3 +32,5 @@
 *.app
 
 out*
+*.exe
+.remote

@@ -47,7 +47,7 @@ public:
   void clearlist();
 
 private:
-  int *board;
+  int board[625];
   std::queue<int> list;
   std::map<int, int> rowhash;
 };

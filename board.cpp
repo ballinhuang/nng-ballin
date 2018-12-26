@@ -7,7 +7,6 @@ using namespace std;
 
 Board::Board()
 {
-    board = new int[BOARDSIZE * BOARDSIZE];
     for (int i = 0; i < BOARDSIZE * BOARDSIZE; i++)
     {
         board[i] = Unknown;
@@ -22,7 +21,6 @@ Board::Board()
 
 Board::~Board()
 {
-    delete[] board;
 }
 
 void Board::copy(const Board *b)
@@ -38,7 +36,6 @@ void Board::copy(const Board *b)
 
 void Board::paintrow(int index, int *row)
 {
-    int tempindex = index;
     if (index <= BOARDSIZE)
     {
         for (int i = 0; i < BOARDSIZE; i++)
