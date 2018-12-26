@@ -1,5 +1,5 @@
-CC := g++ -std=c++11
-CPPFLAGS := -Wall -O3
+CC := nvcc -std=c++11
+CPPFLAGS := -O3 -D_FORCE_INLINES
 SRCS := $(shell ls *.cpp)
 OBJS:=$(subst .cpp,.o,$(SRCS))
 RM:=rm -f
@@ -13,10 +13,11 @@ nng: $(OBJS)
 	$(CC) $(CPPFLAGS)  $^ -o $@ && \
 	echo  "------ Success ------" || echo "------ Fail! ------"
 
-%.o: %.cpp
+%.o: %.c*
 	@echo "------ Compile >> " $^ "to" $@ && \
-	$(CC) $(CPPFLAGS) -c $^ -o $@ && \
+	$(CC) $(CPPFLAGS) --device-c --x=cu $^ && \
 	echo  "------ Success ------" || echo "------ Fail! ------"
+
 
 clean:
 	@$(RM) $(OBJS) && \

@@ -1,8 +1,8 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <map>
 #include <queue>
+#include <cuda_runtime.h>
 
 //Pixel
 #define Unknown -1
@@ -25,31 +25,31 @@ class Board
 public:
   Board();
   ~Board();
-  void copy(const Board *);
-  void paintrow(int, int *);
-  void copytorow(int, int *);
-  int getUnslovedIndex();
-  bool hasUnslovedIndex();
-  void setP(int, int);
-  int getP(int);
-  int getUnPaintedP();
-  int getUnPaintedP(int);
-  void setRowhash(int, int);
-  int getRowhash(int);
-  void checkRowSloved(int);
-  int getStatus();
-  void updateStatus();
-  void mergeBoard(Board *, Board *);
+  __host__ __device__ void copy(const Board *);
+  __host__ __device__ void paintrow(int, int *);
+  __host__ __device__ void copytorow(int, int *);
+  __host__ __device__ int getUnslovedIndex();
+  __host__ __device__ bool hasUnslovedIndex();
+  __host__ __device__ void setP(int, int);
+  __host__ __device__ int getP(int);
+  __host__ __device__ int getUnPaintedP();
+  __host__ __device__ int getUnPaintedP(int);
+  __host__ __device__ void setRowhash(int, int);
+  __host__ __device__ int getRowhash(int);
+  __host__ __device__ void checkRowSloved(int);
+  __host__ __device__ int getStatus();
+  __host__ __device__ void updateStatus();
+  __host__ __device__ void mergeBoard(Board *, Board *);
   int status;
 
   void printBoard(int);
 
-  void clearlist();
+  __host__ __device__ void clearlist();
 
 private:
   int board[625];
   bool dirty = true;
-  std::map<int, int> rowhash;
+  int rowhash[51];
 };
 
 #endif

@@ -6,13 +6,11 @@
  * 因此m_definedTable存的內容就是"是否這個快取中存的位置是有效的"。
  * 而m_fixTable存的內容才是實際的cache值。
  */
-FixCache::FixCache()
+__host__ __device__ FixCache::FixCache()
 {
-	this->m_definedTable = new unsigned int[26];
-	this->m_fixTable = new unsigned int[26];
 }
 
-void FixCache::init()
+__host__ __device__ void FixCache::init()
 {
 	for (int i = 0; i < 26; i++)
 	{
@@ -21,10 +19,8 @@ void FixCache::init()
 	}
 }
 
-FixCache::~FixCache()
+__host__ __device__ FixCache::~FixCache()
 {
-	delete[] this->m_definedTable;
-	delete[] this->m_fixTable;
 }
 
 /**
@@ -33,7 +29,7 @@ FixCache::~FixCache()
  * 所以使用了26個int做為一個cache區塊。
  * 理論上這個cache能存到32*32個，但由於只有用26的row存，所以實際上只能容許25*25的盤面快取。
  */
-void FixCache::setFixResult(int row, int col, bool result)
+__host__ __device__ void FixCache::setFixResult(int row, int col, bool result)
 {
 	if (row < 0 || col < 0)
 		return;
@@ -57,7 +53,7 @@ void FixCache::setFixResult(int row, int col, bool result)
 /**
  * 以下兩個function的原理就是setFixResult()的逆操作而已。
  */
-bool FixCache::hasResult(int row, int col)
+__host__ __device__ bool FixCache::hasResult(int row, int col)
 {
 	if (row < 0 || col < 0)
 		return false;
@@ -66,7 +62,7 @@ bool FixCache::hasResult(int row, int col)
 	return (record >> col) & 1;
 }
 
-bool FixCache::fixResult(int row, int col)
+__host__ __device__ bool FixCache::fixResult(int row, int col)
 {
 	unsigned int record = this->m_fixTable[row];
 

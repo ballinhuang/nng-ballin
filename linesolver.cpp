@@ -1,4 +1,4 @@
-#include <cstring>
+
 #include <iostream>
 #include <cstdlib>
 
@@ -9,44 +9,40 @@
 
 using namespace std;
 
-LineSolver::LineSolver()
+__host__ __device__ LineSolver::LineSolver()
 {
-    this->m_fix1Cache = new FixCache();
-    this->m_fix0Cache = new FixCache();
-    this->m_fix1Cache->init();
-    this->m_fix0Cache->init();
+    this->m_fix1Cache.init();
+    this->m_fix0Cache.init();
 }
 
-LineSolver::~LineSolver()
+__host__ __device__ LineSolver::~LineSolver()
 {
-    delete m_fix1Cache;
-    delete m_fix0Cache;
 }
 
-void LineSolver::setlinesolver(int *row, int *rowclue)
+__host__ __device__ void LineSolver::setlinesolver(int *row, int *rowclue)
 {
     this->row = row;
     this->rowclue = rowclue;
-    this->m_fix1Cache->init();
-    this->m_fix0Cache->init();
+    this->m_fix1Cache.init();
+    this->m_fix0Cache.init();
 }
 
-bool LineSolver::solve()
+__host__ __device__ bool LineSolver::solve()
 {
-    int i = BOARDSIZE;
-    int j = rowclue[CLUESIZE - 1];
+    int i = 25;
+    int j = rowclue[14 - 1];
     bool result = Paint(i, j, row);
     return result;
 }
 
-bool LineSolver::Paint(int i, int j, int *row)
+__host__ __device__ bool LineSolver::Paint(int i, int j, int *row)
 {
     if (i == 0)
         return true;
     return Paintp(i, j, row);
 }
 
-bool LineSolver::Paintp(int i, int j, int *row)
+__host__ __device__ bool LineSolver::Paintp(int i, int j, int *row)
 {
     bool f0 = Fix0(i, j, row);
     bool f1 = Fix1(i, j, row);
@@ -61,7 +57,7 @@ bool LineSolver::Paintp(int i, int j, int *row)
     }
     else if (f0 && f1)
     {
-        int p0row[BOARDSIZE], p1row[BOARDSIZE];
+        int p0row[25], p1row[25];
         this->copyrow(p0row, row);
         this->copyrow(p1row, row);
         Paint0(i, j, p0row);
@@ -75,13 +71,13 @@ bool LineSolver::Paintp(int i, int j, int *row)
     return true;
 }
 
-void LineSolver::Paint0(int i, int j, int *row)
+__host__ __device__ void LineSolver::Paint0(int i, int j, int *row)
 {
     row[i - 1] = UnPainted;
     Paint(i - 1, j, row);
 }
 
-void LineSolver::Paint1(int i, int j, int *row)
+__host__ __device__ void LineSolver::Paint1(int i, int j, int *row)
 {
     int d = rowclue[j - 1];
     for (int k = i - 1; k >= i - d; k--)
@@ -96,7 +92,7 @@ void LineSolver::Paint1(int i, int j, int *row)
     Paint(i, j, row);
 }
 
-bool LineSolver::Fix0(int i, int j, int *row)
+__host__ __device__ bool LineSolver::Fix0(int i, int j, int *row)
 {
     if (row[i - 1] != Painted)
     {
@@ -109,7 +105,7 @@ bool LineSolver::Fix0(int i, int j, int *row)
     }
 }
 
-bool LineSolver::Fix1(int i, int j, int *row)
+__host__ __device__ bool LineSolver::Fix1(int i, int j, int *row)
 {
     if (j == 0)
     {
@@ -139,7 +135,7 @@ bool LineSolver::Fix1(int i, int j, int *row)
     return result;
 }
 
-bool LineSolver::Fix(int i, int j, int *row)
+__host__ __device__ bool LineSolver::Fix(int i, int j, int *row)
 {
     if (i == 0 && j == 0)
         return true;
@@ -150,38 +146,38 @@ bool LineSolver::Fix(int i, int j, int *row)
         bool fix1Result;
         bool fix0Result;
 
-        if (this->m_fix1Cache->hasResult(i, j))
+        if (this->m_fix1Cache.hasResult(i, j))
         {
-            fix1Result = this->m_fix1Cache->fixResult(i, j);
+            fix1Result = this->m_fix1Cache.fixResult(i, j);
         }
         else
         {
             fix1Result = Fix1(i, j, row);
-            this->m_fix1Cache->setFixResult(i, j, fix1Result);
+            this->m_fix1Cache.setFixResult(i, j, fix1Result);
         }
 
-        if (this->m_fix0Cache->hasResult(i, j))
+        if (this->m_fix0Cache.hasResult(i, j))
         {
-            fix0Result = this->m_fix0Cache->fixResult(i, j);
+            fix0Result = this->m_fix0Cache.fixResult(i, j);
         }
         else
         {
             fix0Result = Fix0(i, j, row);
-            this->m_fix0Cache->setFixResult(i, j, fix0Result);
+            this->m_fix0Cache.setFixResult(i, j, fix0Result);
         }
         return fix1Result || fix0Result;
     }
 }
 
-void LineSolver::copyrow(int *copy, int *row)
+__host__ __device__ void LineSolver::copyrow(int *copy, int *row)
 {
-    for (int i = 0; i < BOARDSIZE; i++)
+    for (int i = 0; i < 25; i++)
         copy[i] = row[i];
 }
 
-void LineSolver::mergerow(int *row, int *p0row, int *p1row)
+__host__ __device__ void LineSolver::mergerow(int *row, int *p0row, int *p1row)
 {
-    for (int i = 0; i < BOARDSIZE; i++)
+    for (int i = 0; i < 25; i++)
     {
         if (row[i] != p0row[i] && p0row[i] == p1row[i])
         {

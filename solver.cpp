@@ -3,6 +3,7 @@
 #include "solver.hpp"
 #include "options.hpp"
 #include "linesolver.hpp"
+#include <cuda_runtime.h>
 using namespace std;
 
 BoardSolver::BoardSolver(int *data)
@@ -78,62 +79,64 @@ Board *BoardSolver::getAnser()
     return &board;
 }
 
-void BoardSolver::PROPAGATE(Board *G)
+__global__ void kernel(Board *G, int *clue)
 {
-    int unslovedindex;
-    int row[BOARDSIZE];
-    int rowclue[CLUESIZE];
+    int index_row = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int index_col = blockIdx.x * blockDim.x + threadIdx.x + 26;
+
+    int row[625];
+    int rowclue[14];
     LineSolver linesolver;
-    while (G->hasUnslovedIndex())
+    bool result;
+
+    while (G->hasUnslovedIndex() && G->status != CONFLICT)
     {
+        __syncthreads();
         G->clearlist();
+        __syncthreads();
 
-        for (unslovedindex = 1; unslovedindex <= 25; unslovedindex++)
+        G->setRowhash(index_row, RowUnSloved);
+        G->copytorow(index_row, row);
+        memcpy(rowclue, &clue[(index_row - 1) * 14], sizeof(int) * 14);
+
+        linesolver.setlinesolver(row, rowclue);
+        result = linesolver.solve();
+
+        if (result)
         {
-            if (G->getRowhash(unslovedindex) == RowInQueue)
-            {
-                G->setRowhash(unslovedindex, RowUnSloved);
-                G->copytorow(unslovedindex, row);
-                copyClue(unslovedindex, rowclue);
-
-                linesolver.setlinesolver(row, rowclue);
-                bool result = linesolver.solve();
-
-                if (result)
-                {
-                    G->paintrow(unslovedindex, row);
-                }
-                else
-                {
-                    G->status = CONFLICT;
-                    return;
-                }
-            }
+            G->paintrow(index_row, row);
+        }
+        else
+        {
+            G->status = CONFLICT;
         }
 
-        for (unslovedindex = 26; unslovedindex <= 50; unslovedindex++)
+        __syncthreads();
+
+        G->setRowhash(index_col, RowUnSloved);
+        G->copytorow(index_col, row);
+        memcpy(rowclue, &clue[(index_col - 1) * 14], sizeof(int) * 14);
+
+        linesolver.setlinesolver(row, rowclue);
+        result = linesolver.solve();
+
+        if (result)
         {
-            if (G->getRowhash(unslovedindex) == RowInQueue)
-            {
-                G->setRowhash(unslovedindex, RowUnSloved);
-                G->copytorow(unslovedindex, row);
-                copyClue(unslovedindex, rowclue);
-
-                linesolver.setlinesolver(row, rowclue);
-                bool result = linesolver.solve();
-
-                if (result)
-                {
-                    G->paintrow(unslovedindex, row);
-                }
-                else
-                {
-                    G->status = CONFLICT;
-                    return;
-                }
-            }
+            G->paintrow(index_col, row);
+        }
+        else
+        {
+            G->status = CONFLICT;
         }
     }
+}
+
+void BoardSolver::PROPAGATE(Board *G)
+{
+    cudaMalloc(&G, sizeof(Board));
+    kernel<<<1, 25>>>(G, clue);
+    cudaMemcpy(&G, G, sizeof(Board), cudaMemcpyDeviceToHost);
+    cudaFree(G);
     G->updateStatus();
 }
 
