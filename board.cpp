@@ -13,7 +13,6 @@ Board::Board()
     }
     for (int i = 1; i <= BOARDSIZE * 2; i++)
     {
-        list.push(i);
         rowhash[i] = RowInQueue;
     }
     status = INCOMPLETE;
@@ -29,9 +28,9 @@ void Board::copy(const Board *b)
     {
         board[i] = b->board[i];
     }
-    this->list = b->list;
     this->rowhash = b->rowhash;
     this->status = b->status;
+    this->dirty = b->dirty;
 }
 
 void Board::paintrow(int index, int *row)
@@ -84,27 +83,14 @@ void Board::copytorow(int index, int *row)
 
 bool Board::hasUnslovedIndex()
 {
-    if (!this->list.empty())
+    if (this->dirty)
         return true;
     return false;
 }
 
-int Board::getUnslovedIndex()
-{
-    int result = -1;
-    if (hasUnslovedIndex())
-    {
-        result = this->list.front();
-        this->list.pop();
-        rowhash[result] = RowUnSloved;
-    }
-    return result;
-}
-
 void Board::clearlist()
 {
-    std::queue<int> empty;
-    std::swap(this->list, empty);
+    this->dirty = false;
 }
 
 //useless
@@ -144,7 +130,7 @@ void Board::setRowhash(int index, int status)
     {
         if (getRowhash(index) == RowUnSloved)
         {
-            list.push(index);
+            this->dirty = true;
             rowhash[index] = status;
             return;
         }

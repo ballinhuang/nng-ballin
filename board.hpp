@@ -48,7 +48,7 @@ public:
 
 private:
   int board[625];
-  std::queue<int> list;
+  bool dirty = true;
   std::map<int, int> rowhash;
 };
 
