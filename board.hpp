@@ -46,7 +46,6 @@ public:
 
   __host__ __device__ void clearlist();
 
-private:
   int board[625];
   bool dirty = true;
   int rowhash[51];

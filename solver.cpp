@@ -79,7 +79,7 @@ Board *BoardSolver::getAnser()
     return &board;
 }
 
-__global__ void kernel(Board *G, int *clue)
+__global__ void kernel(Board *G, int *clues)
 {
     int index_row = blockIdx.x * blockDim.x + threadIdx.x + 1;
     int index_col = blockIdx.x * blockDim.x + threadIdx.x + 26;
@@ -91,12 +91,13 @@ __global__ void kernel(Board *G, int *clue)
 
     while (G->hasUnslovedIndex() && G->status != CONFLICT)
     {
+        __syncthreads();
         G->clearlist();
         __syncthreads();
 
         G->setRowhash(index_row, RowUnSloved);
         G->copytorow(index_row, row);
-        memcpy(rowclue, &clue[(index_row - 1) * 14], sizeof(int) * 14);
+        memcpy(rowclue, &clues[(index_row - 1) * 14], sizeof(int) * 14);
 
         linesolver.setlinesolver(row, rowclue);
         result = linesolver.solve();
@@ -114,7 +115,7 @@ __global__ void kernel(Board *G, int *clue)
 
         G->setRowhash(index_col, RowUnSloved);
         G->copytorow(index_col, row);
-        memcpy(rowclue, &clue[(index_col - 1) * 14], sizeof(int) * 14);
+        memcpy(rowclue, &clues[(index_col - 1) * 14], sizeof(int) * 14);
 
         linesolver.setlinesolver(row, rowclue);
         result = linesolver.solve();
@@ -127,19 +128,34 @@ __global__ void kernel(Board *G, int *clue)
         {
             G->status = CONFLICT;
         }
+
         __syncthreads();
     }
 }
 
 void BoardSolver::PROPAGATE(Board *G)
 {
+    printf("%d\n", clue[0]);
     Board *G_gpu;
+    int *clues;
     cudaMalloc(&G_gpu, sizeof(Board));
     cudaMemcpy(G_gpu, G, sizeof(Board), cudaMemcpyHostToDevice);
-    kernel<<<1, 25>>>(G_gpu, clue);
+    cudaMalloc(&clues, sizeof(int) * 50 * 14);
+    cudaMemcpy(clues, clue, sizeof(int) * 50 * 14, cudaMemcpyHostToDevice);
+
+    kernel<<<1, 25>>>(G_gpu, clues);
     cudaMemcpy(G, G_gpu, sizeof(Board), cudaMemcpyDeviceToHost);
+
     cudaFree(G_gpu);
+    cudaFree(clues);
+
+    if (G->status == CONFLICT)
+    {
+        return;
+    }
     G->updateStatus();
+    G->printBoard(0);
+    exit(0);
 }
 
 void BoardSolver::PROBE(Board *G, int p)
