@@ -1,4 +1,5 @@
 #include <cstring>
+#include <omp.h>
 
 #include "solver.hpp"
 #include "options.hpp"
@@ -88,6 +89,7 @@ void BoardSolver::PROPAGATE(Board *G)
     {
         G->clearlist();
 
+        #pragma omp parallel for private(unslovedindex, linesolver, row, rowclue)
         for (unslovedindex = 1; unslovedindex <= 25; unslovedindex++)
         {
             if (G->getRowhash(unslovedindex) == RowInQueue)
@@ -106,11 +108,15 @@ void BoardSolver::PROPAGATE(Board *G)
                 else
                 {
                     G->status = CONFLICT;
-                    return;
+                    // return;
                 }
             }
         }
+        if (G->status == CONFLICT) {
+            return;
+        }
 
+        #pragma omp parallel for private(unslovedindex, linesolver, row, rowclue)
         for (unslovedindex = 26; unslovedindex <= 50; unslovedindex++)
         {
             if (G->getRowhash(unslovedindex) == RowInQueue)
@@ -129,9 +135,13 @@ void BoardSolver::PROPAGATE(Board *G)
                 else
                 {
                     G->status = CONFLICT;
-                    return;
+                    // return;
                 }
             }
+        }
+
+        if (G->status == CONFLICT) {
+            return;
         }
     }
     G->updateStatus();
@@ -148,8 +158,13 @@ void BoardSolver::PROBE(Board *G, int p)
     GZERO.setP(p, 0);
     GONE.setP(p, 1);
 
-    PROPAGATE(&GZERO);
-    PROPAGATE(&GONE);
+    #pragma omp parallel sections
+    {
+        #pragma omp section
+            PROPAGATE(&GZERO);
+        #pragma omp section
+            PROPAGATE(&GONE);
+    }
 
     if (GZERO.getStatus() == CONFLICT && GONE.getStatus() == CONFLICT)
     {

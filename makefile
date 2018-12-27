@@ -1,5 +1,5 @@
 CC := g++ -std=c++11
-CPPFLAGS := -Wall -O3
+CPPFLAGS := -Wall -O3 -fopenmp
 SRCS := $(shell ls *.cpp)
 OBJS:=$(subst .cpp,.o,$(SRCS))
 RM:=rm -f
