@@ -139,7 +139,6 @@ void BoardSolver::PROPAGATE(Board *G)
     kernel<<<1, 25>>>(G_gpu, clue);
     cudaMemcpy(G, G_gpu, sizeof(Board), cudaMemcpyDeviceToHost);
     cudaFree(G_gpu);
-    G->printBoard(1);
     G->updateStatus();
 }
 
